@@ -1,15 +1,12 @@
-﻿using System.Net;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using DemoInfo;
 using System.IO;
 using System.Numerics;
-
+using System.Drawing;
+using System.Drawing.Imaging;
+using csgo_analytics.DemoExtensions;
 namespace csgo_analytics.Controllers
 {
     public class HomeController : Controller
@@ -25,8 +22,11 @@ namespace csgo_analytics.Controllers
 
         public IActionResult Index()
         {
+
             DemoParser demoParser = new DemoParser(LDemo);
             demoParser.ParseHeader();
+
+            
 
             List<Vector2> posicoes = new List<Vector2>();
             bool hasMatchStarted = false;
@@ -34,7 +34,6 @@ namespace csgo_analytics.Controllers
 
             demoParser.MatchStarted += (sender, e) => {
                 hasMatchStarted = true;
-
             };
 
             demoParser.PlayerHurt += (sender, e) => {
@@ -50,7 +49,28 @@ namespace csgo_analytics.Controllers
             };
 
             demoParser.ParseToEnd();
-            return View(posicoes);
+
+            DrawingPoints(posicoes);
+
+            return View(demoParser.ReadPlayersName());
+        }
+
+        private void DrawingPoints(List<Vector2> APositions)
+        {
+            
+            using (var image = System.IO.File.Open("wwwroot\\images\\de_dust2.jpg", FileMode.Open))
+            {
+                var bitmap = new Bitmap(image);
+                Graphics graph = Graphics.FromImage(bitmap);
+
+                Pen pen = new Pen(Color.Red);
+                foreach (Vector2 Position in APositions)
+                {
+                    graph.DrawEllipse(pen, Position.X, Position.Y, 10, 10);
+                }
+
+                bitmap.Save("wwwroot/images/head_map.png", ImageFormat.Png);
+            }
         }
 
         private Vector2 TrasnlateScale(float x, float y)

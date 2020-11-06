@@ -1,49 +1,32 @@
 ﻿@using System.Collections.Generic;
 @using System.Numerics;
-@model List<Vector2>;
+@model List<string>;
 @{
     ViewData["Title"] = "Home Page";
 }
 
-<div id="container">
-    <img id="img" src="~/images/de_dust2.jpg"/> 
-    <canvas id="canvas" style="z-index: 100; border: 1px solid black;">
-    </canvas>
-</div>
+<style>
+    .item-name{
+        margin-bottom: 25px;
+        background: white;
+        padding: 10px 14px;
+        border-radius: 10px;
+    }
+    #menu{
+        background-color: #808080;
+    }
+</style>
 
-<script>
-    $(document).ready(function(){
-        const canvas = document.querySelector("#canvas");
-        const context = canvas.getContext("2d");
+    <div class="row">
+        <div class="col-md-2" id="menu">
+            @foreach (string Name in Model)
+            {
+                <div class="item-name">@Name</div>
+            }
+        </div>
+        <div class="col-md-10 d-flex justify-content-center align-items-center">
+            <img src="~/images/head_map.png" alt="" style="width: 700px;">
+        </div>
+    </div>
 
-        canvas.width = 1100;
-        canvas.height = 1100;
-
-        var img = document.getElementById("img");
-
-        context.beginPath();
-        context.drawImage(img, 1024, 1024);
-        context.arc(95,50,5,0,2*Math.PI);
-        context.fillStyle = "red";
-        context.fill();
-    })
-</script>
-
- 
-@* 
-<script>
-    $(document).ready(function(){
-        // create configuration object
-        var config = {
-            container: document.getElementById('container'),
-            radius: 10,
-            maxOpacity: .5,
-            minOpacity: 0,
-            blur: .75
-        };
-        var heatmapInstance = h337.create(config);
-        heatmapInstance.addData(@Model);
-        heatmapInstance.repaint();
-    });
-</script>   *@
 
