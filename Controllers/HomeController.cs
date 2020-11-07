@@ -7,12 +7,14 @@ using System.Numerics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using csgo_analytics.DemoExtensions;
+
+
 namespace csgo_analytics.Controllers
 {
     public class HomeController : Controller
     {
         
-        FileStream LDemo = System.IO.File.OpenRead("C:\\Downloads_hltv\\dust2.dem");
+        FileStream LDemo = System.IO.File.OpenRead("C:\\Demos\\dust2.dem");
         Map MapDeDust2;
         
         public HomeController(ILogger<HomeController> logger)
@@ -25,8 +27,6 @@ namespace csgo_analytics.Controllers
 
             DemoParser demoParser = new DemoParser(LDemo);
             demoParser.ParseHeader();
-
-            
 
             List<Vector2> posicoes = new List<Vector2>();
             bool hasMatchStarted = false;
@@ -42,7 +42,10 @@ namespace csgo_analytics.Controllers
             };
             
             demoParser.WeaponFired += (sender, e) => {
-                if (e.Shooter.Name.Contains("SILVASSAURO") && hasMatchStarted){
+                if (e.Shooter.Name.Contains("SILVASSAURO") && hasMatchStarted 
+                   && e.Weapon.Weapon != EquipmentElement.Knife && e.Weapon.Weapon != EquipmentElement.Molotov
+                   && e.Weapon.Weapon != EquipmentElement.Smoke && e.Weapon.Weapon != EquipmentElement.Flash
+                   && e.Weapon.Weapon != EquipmentElement.Decoy && e.Weapon.Weapon != EquipmentElement.HE){
                     Vector2 vet = TrasnlateScale(e.Shooter.Position.X, e.Shooter.Position.Y);
                     posicoes.Add(vet);
                 }
