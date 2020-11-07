@@ -8,7 +8,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using csgo_analytics.DemoExtensions;
 
-
 namespace csgo_analytics.Controllers
 {
     public class HomeController : Controller
@@ -22,9 +21,9 @@ namespace csgo_analytics.Controllers
             MapDeDust2 = MakeMap("de_dust2", -2476, 3239, 4.4f);
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string name = "")
         {
-
+            ViewBag.FilterName = name;
             DemoParser demoParser = new DemoParser(LDemo);
             demoParser.ParseHeader();
 
@@ -42,9 +41,8 @@ namespace csgo_analytics.Controllers
                     deathPositions.Add(vet);
                 }
             };
-            
             demoParser.WeaponFired += (sender, e) => {
-                if (e.Shooter.Name.Contains("SILVASSAURO") && hasMatchStarted 
+                if (e.Shooter.Name.Contains(name) && hasMatchStarted 
                    && e.Weapon.Weapon != EquipmentElement.Knife && e.Weapon.Weapon != EquipmentElement.Molotov
                    && e.Weapon.Weapon != EquipmentElement.Smoke && e.Weapon.Weapon != EquipmentElement.Flash
                    && e.Weapon.Weapon != EquipmentElement.Decoy && e.Weapon.Weapon != EquipmentElement.HE){
@@ -55,8 +53,8 @@ namespace csgo_analytics.Controllers
 
             demoParser.ParseToEnd();
 
-            //DrawingPoints(shootingPositions);
-            DrawingPoints(deathPositions);
+            DrawingPoints(shootingPositions);
+            //DrawingPoints(deathPositions);
             
             return View(demoParser.ReadPlayersName());
         }
@@ -69,14 +67,20 @@ namespace csgo_analytics.Controllers
                 var bitmap = new Bitmap(image);
                 Graphics graph = Graphics.FromImage(bitmap);
 
-                Pen pen = new Pen(Color.Red);
+                Brush brush= new SolidBrush(Color.Red);
                 foreach (Vector2 Position in APositions)
                 {
-                    graph.DrawEllipse(pen, Position.X, Position.Y, 10, 10);
+                    graph.FillEllipse(brush, Position.X, Position.Y, 10, 10);
+
                 }
 
-                bitmap.Save("wwwroot/images/head_map.png", ImageFormat.Png);
+                bitmap.Save("wwwroot/images/heatmap/heat_map.png", ImageFormat.Png);
+                
+                graph.Dispose();
+                bitmap.Dispose();
+                image.Dispose();
             }
+            Dispose();
         }
 
         private Vector2 TrasnlateScale(float x, float y)
