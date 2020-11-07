@@ -5,4 +5,4 @@
 /node_modules
 /obj
 /UpgradeLog.htm
-wwwroot\images\heatmap
+/wwwroot/images/heatmap
