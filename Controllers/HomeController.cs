@@ -7,7 +7,6 @@ using System.Numerics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using csgo_analytics.DemoExtensions;
-using System.Linq;
 
 namespace csgo_analytics.Controllers
 {
@@ -28,10 +27,8 @@ namespace csgo_analytics.Controllers
             DemoParser demoParser = new DemoParser(LDemo);
             demoParser.ParseHeader();
 
-
             List<Vector2> posicoes = new List<Vector2>();
             bool hasMatchStarted = false;
-            
 
             demoParser.MatchStarted += (sender, e) => {
                 hasMatchStarted = true;
@@ -42,8 +39,10 @@ namespace csgo_analytics.Controllers
                 }
             };
             demoParser.WeaponFired += (sender, e) => {
-                if(e.Shooter.Name.Contains(name) && hasMatchStarted) 
-                {
+                if (e.Shooter.Name.Contains(name) && hasMatchStarted 
+                   && e.Weapon.Weapon != EquipmentElement.Knife && e.Weapon.Weapon != EquipmentElement.Molotov
+                   && e.Weapon.Weapon != EquipmentElement.Smoke && e.Weapon.Weapon != EquipmentElement.Flash
+                   && e.Weapon.Weapon != EquipmentElement.Decoy && e.Weapon.Weapon != EquipmentElement.HE){
                     Vector2 vet = TrasnlateScale(e.Shooter.Position.X, e.Shooter.Position.Y);
                     posicoes.Add(vet);
                 }
