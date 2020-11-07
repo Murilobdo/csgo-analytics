@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using DemoInfo;
@@ -36,7 +37,7 @@ namespace csgo_analytics.Controllers
             };
 
             demoParser.PlayerKilled += (sender, e) => {
-                if (e.Victim.Name.Contains("SILVASSAURO") && hasMatchStarted){
+                if (e.Victim.Name.Contains(name) && hasMatchStarted){
                     Vector2 vet = TrasnlateScale(e.Victim.LastAlivePosition.X, e.Victim.LastAlivePosition.Y);
                     deathPositions.Add(vet);
                 }
@@ -53,13 +54,12 @@ namespace csgo_analytics.Controllers
 
             demoParser.ParseToEnd();
 
-            DrawingPoints(shootingPositions);
-            //DrawingPoints(deathPositions);
+            DrawingPoints(shootingPositions, deathPositions);
             
             return View(demoParser.ReadPlayersName());
         }
 
-        private void DrawingPoints(List<Vector2> APositions)
+        private void DrawingPoints(List<Vector2> shootingPositions, List<Vector2> deathPositions)
         {
             
             using (var image = System.IO.File.Open("wwwroot\\images\\de_dust2.jpg", FileMode.Open))
@@ -68,10 +68,15 @@ namespace csgo_analytics.Controllers
                 Graphics graph = Graphics.FromImage(bitmap);
 
                 Brush brush= new SolidBrush(Color.Red);
-                foreach (Vector2 Position in APositions)
+                foreach (Vector2 Position in shootingPositions)
                 {
                     graph.FillEllipse(brush, Position.X, Position.Y, 10, 10);
+                }
 
+                Image deathIcon = Image.FromFile("wwwroot\\images\\rip.png");
+                foreach (Vector2 Position in deathPositions)
+                {
+                    graph.DrawImage(deathIcon, Position.X - 15, Position.Y - 15);
                 }
 
                 bitmap.Save("wwwroot/images/heatmap/heat_map.png", ImageFormat.Png);
@@ -81,6 +86,16 @@ namespace csgo_analytics.Controllers
                 image.Dispose();
             }
             Dispose();
+        }
+
+        public Color HeatMapColor(decimal value, decimal min, decimal max)
+        {
+            decimal val = (value - min) / (max - min);
+            int r = Convert.ToByte(255 * val);
+            int g = Convert.ToByte(255 * (1 - val));
+            int b = 0;
+
+            return Color.FromArgb(255,r,g,b);                                    
         }
 
         private Vector2 TrasnlateScale(float x, float y)
