@@ -13,20 +13,42 @@
         border-radius: 10px;
     }
     #menu{
-        background-color: #808080;
+        background-color: #1454d8a8;
+        padding: 18px 10px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    }
+    #container{
+        height: 90vh;
+    }
+    #info{
+        background-color: #1454d8a8;
+    }
+    #head-map{
+        background: black;
     }
 </style>
 
-    <div class="row">
-        <div class="col-md-2" id="menu">
+
+<div id="container" class="container pt-5">
+    <div id="box" class="row" style="height: 100%;">
+        <div id="menu" class="col-md-2">
             @foreach (string Name in Model)
             {
-                <div class="item-name">@Name</div>
+                <a class="item-name" href="./?name=@Name" class="col-12">@Name</a>
             }
         </div>
-        <div class="col-md-10 d-flex justify-content-center align-items-center">
-            <img src="~/images/head_map.png" alt="" style="width: 700px;">
+        <div id="head-map" class="col-md-8">
+            @if(ViewBag.FilterName == ""){
+                <img src="~/images/de_dust2.png" alt="" style="width: 700px;">
+            }else{
+                <img src="~/images/head_map.png" alt="" style="width: 700px;">
+            }
+        </div>
+        <div id="info" class="col-md-2">
+            <p style="font-size: 10px; font-weight: bold;">INFORMAÇÕES GERAIS</p>
         </div>
     </div>
-
-
+</div>

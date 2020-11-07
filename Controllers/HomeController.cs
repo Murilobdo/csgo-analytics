@@ -7,6 +7,8 @@ using System.Numerics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using csgo_analytics.DemoExtensions;
+using System.Linq;
+
 namespace csgo_analytics.Controllers
 {
     public class HomeController : Controller
@@ -20,13 +22,12 @@ namespace csgo_analytics.Controllers
             MapDeDust2 = MakeMap("de_dust2", -2476, 3239, 4.4f);
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string name = "")
         {
-
+            ViewBag.FilterName = name;
             DemoParser demoParser = new DemoParser(LDemo);
             demoParser.ParseHeader();
 
-            
 
             List<Vector2> posicoes = new List<Vector2>();
             bool hasMatchStarted = false;
@@ -40,9 +41,9 @@ namespace csgo_analytics.Controllers
                 if(hasMatchStarted) {
                 }
             };
-            
             demoParser.WeaponFired += (sender, e) => {
-                if (e.Shooter.Name.Contains("SILVASSAURO") && hasMatchStarted){
+                if(e.Shooter.Name.Contains(name) && hasMatchStarted) 
+                {
                     Vector2 vet = TrasnlateScale(e.Shooter.Position.X, e.Shooter.Position.Y);
                     posicoes.Add(vet);
                 }
@@ -63,14 +64,20 @@ namespace csgo_analytics.Controllers
                 var bitmap = new Bitmap(image);
                 Graphics graph = Graphics.FromImage(bitmap);
 
-                Pen pen = new Pen(Color.Red);
+                Brush brush= new SolidBrush(Color.Red);
                 foreach (Vector2 Position in APositions)
                 {
-                    graph.DrawEllipse(pen, Position.X, Position.Y, 10, 10);
+                    graph.FillEllipse(brush, Position.X, Position.Y, 10, 10);
+
                 }
 
                 bitmap.Save("wwwroot/images/head_map.png", ImageFormat.Png);
+                
+                graph.Dispose();
+                bitmap.Dispose();
+                image.Dispose();
             }
+            Dispose();
         }
 
         private Vector2 TrasnlateScale(float x, float y)
