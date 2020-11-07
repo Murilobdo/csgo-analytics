@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using DemoInfo;
@@ -27,15 +28,18 @@ namespace csgo_analytics.Controllers
             DemoParser demoParser = new DemoParser(LDemo);
             demoParser.ParseHeader();
 
-            List<Vector2> posicoes = new List<Vector2>();
+            List<Vector2> shootingPositions = new List<Vector2>();
+            List<Vector2> deathPositions = new List<Vector2>();
             bool hasMatchStarted = false;
 
             demoParser.MatchStarted += (sender, e) => {
                 hasMatchStarted = true;
             };
 
-            demoParser.PlayerHurt += (sender, e) => {
-                if(hasMatchStarted) {
+            demoParser.PlayerKilled += (sender, e) => {
+                if (e.Victim.Name.Contains(name) && hasMatchStarted){
+                    Vector2 vet = TrasnlateScale(e.Victim.LastAlivePosition.X, e.Victim.LastAlivePosition.Y);
+                    deathPositions.Add(vet);
                 }
             };
             demoParser.WeaponFired += (sender, e) => {
@@ -44,18 +48,18 @@ namespace csgo_analytics.Controllers
                    && e.Weapon.Weapon != EquipmentElement.Smoke && e.Weapon.Weapon != EquipmentElement.Flash
                    && e.Weapon.Weapon != EquipmentElement.Decoy && e.Weapon.Weapon != EquipmentElement.HE){
                     Vector2 vet = TrasnlateScale(e.Shooter.Position.X, e.Shooter.Position.Y);
-                    posicoes.Add(vet);
+                    shootingPositions.Add(vet);
                 }
             };
 
             demoParser.ParseToEnd();
 
-            DrawingPoints(posicoes);
-
+            DrawingPoints(shootingPositions, deathPositions);
+            
             return View(demoParser.ReadPlayersName());
         }
 
-        private void DrawingPoints(List<Vector2> APositions)
+        private void DrawingPoints(List<Vector2> shootingPositions, List<Vector2> deathPositions)
         {
             
             using (var image = System.IO.File.Open("wwwroot\\images\\de_dust2.jpg", FileMode.Open))
@@ -64,19 +68,34 @@ namespace csgo_analytics.Controllers
                 Graphics graph = Graphics.FromImage(bitmap);
 
                 Brush brush= new SolidBrush(Color.Red);
-                foreach (Vector2 Position in APositions)
+                foreach (Vector2 Position in shootingPositions)
                 {
                     graph.FillEllipse(brush, Position.X, Position.Y, 10, 10);
-
                 }
 
-                bitmap.Save("wwwroot/images/head_map.png", ImageFormat.Png);
+                Image deathIcon = Image.FromFile("wwwroot\\images\\rip.png");
+                foreach (Vector2 Position in deathPositions)
+                {
+                    graph.DrawImage(deathIcon, Position.X - 15, Position.Y - 15);
+                }
+
+                bitmap.Save("wwwroot/images/heatmap/heat_map.png", ImageFormat.Png);
                 
                 graph.Dispose();
                 bitmap.Dispose();
                 image.Dispose();
             }
             Dispose();
+        }
+
+        public Color HeatMapColor(decimal value, decimal min, decimal max)
+        {
+            decimal val = (value - min) / (max - min);
+            int r = Convert.ToByte(255 * val);
+            int g = Convert.ToByte(255 * (1 - val));
+            int b = 0;
+
+            return Color.FromArgb(255,r,g,b);                                    
         }
 
         private Vector2 TrasnlateScale(float x, float y)
@@ -105,7 +124,5 @@ namespace csgo_analytics.Controllers
                 this.Scale = Scale;
             }
         }
-
-
     }
 }
