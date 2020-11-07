@@ -14,7 +14,7 @@ namespace csgo_analytics.Controllers
     public class HomeController : Controller
     {
         
-        FileStream LDemo = System.IO.File.OpenRead("C:\\Demos\\dust2.dem");
+        FileStream LDemo = System.IO.File.OpenRead("C:\\Downloads_hltv\\dust2.dem");
         Map MapDeDust2;
         
         public HomeController(ILogger<HomeController> logger)
@@ -28,16 +28,18 @@ namespace csgo_analytics.Controllers
             DemoParser demoParser = new DemoParser(LDemo);
             demoParser.ParseHeader();
 
-            List<Vector2> posicoes = new List<Vector2>();
+            List<Vector2> shootingPositions = new List<Vector2>();
+            List<Vector2> deathPositions = new List<Vector2>();
             bool hasMatchStarted = false;
-            
 
             demoParser.MatchStarted += (sender, e) => {
                 hasMatchStarted = true;
             };
 
-            demoParser.PlayerHurt += (sender, e) => {
-                if(hasMatchStarted) {
+            demoParser.PlayerKilled += (sender, e) => {
+                if (e.Victim.Name.Contains("SILVASSAURO") && hasMatchStarted){
+                    Vector2 vet = TrasnlateScale(e.Victim.LastAlivePosition.X, e.Victim.LastAlivePosition.Y);
+                    deathPositions.Add(vet);
                 }
             };
             
@@ -47,14 +49,15 @@ namespace csgo_analytics.Controllers
                    && e.Weapon.Weapon != EquipmentElement.Smoke && e.Weapon.Weapon != EquipmentElement.Flash
                    && e.Weapon.Weapon != EquipmentElement.Decoy && e.Weapon.Weapon != EquipmentElement.HE){
                     Vector2 vet = TrasnlateScale(e.Shooter.Position.X, e.Shooter.Position.Y);
-                    posicoes.Add(vet);
+                    shootingPositions.Add(vet);
                 }
             };
 
             demoParser.ParseToEnd();
 
-            DrawingPoints(posicoes);
-
+            //DrawingPoints(shootingPositions);
+            DrawingPoints(deathPositions);
+            
             return View(demoParser.ReadPlayersName());
         }
 
@@ -102,7 +105,5 @@ namespace csgo_analytics.Controllers
                 this.Scale = Scale;
             }
         }
-
-
     }
 }
